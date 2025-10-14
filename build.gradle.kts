@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "net.agl.gradle"
-version = "0.0.0-SNAPSHOT"
+version = versionFromGit(project)
 
 gradlePlugin {
     plugins {
@@ -33,33 +33,16 @@ sourceSets {
     }
 }
 
-val versionTask = tasks.register("version", DefaultTask::class.java) {
-    group = "build"
-    description = "Get project version from GIT tags"
-
-    doLast {
-        project.version = versionFromGit(project)
-        println("Version calculated: ${AnsiColors.GREEN_BRIGHT}${project.version}${AnsiColors.RESET}")
-    }
-}
-
-project.tasks.getByName("classes").dependsOn(versionTask)
-project.tasks.filter { it.group == "publishing" }.forEach {
-    it.dependsOn(versionTask)
-    it.mustRunAfter(versionTask)
-}
-
 publishing {
     repositories {
         maven {
-            name = "mavenRepo"
-            url = uri(providers.provider {
-                if (version.toString().endsWith("-SNAPSHOT"))
+            name = "nexus"
+            url = uri(
+                if (project.version.toString().endsWith("-SNAPSHOT"))
                     (findProperty("repo.publish.snapshots")
                         ?: findProperty("repo.publish.releases"))!! as String
-                else
-                    findProperty("repo.publish.releases")!! as String
-            })
+                else findProperty("repo.publish.releases")!! as String
+            )
             credentials {
                 username = findProperty("repo.publish.username")!! as String
                 password = findProperty("repo.publish.password")!! as String
