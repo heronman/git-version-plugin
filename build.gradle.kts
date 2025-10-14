@@ -5,13 +5,13 @@ plugins {
 }
 
 group = "net.agl.gradle"
-version = VersionUtils.computeVersion(project)
+version = "0.0.0-SNAPSHOT"
 
 gradlePlugin {
     plugins {
-        create("versionPlugin") {
-            id = "net.agl.gradle.version-plugin"
-            implementationClass = "net.agl.gradle.VersionPlugin"
+        create("gitVersionPlugin") {
+            id = "${project.group}.${project.name}"
+            implementationClass = "net.agl.gradle.GitVersionPlugin"
         }
     }
 }
@@ -22,31 +22,46 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("org.eclipse.jgit:org.eclipse.jgit:7.4.0.202509020913-r")
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs("buildSrc/src/main/kotlin")
+        }
+    }
+}
+
+val versionFromGigTask = tasks.register("versionFromGit", DefaultTask::class.java) {
+    group = "build"
+    description = "Get project version from GIT tags"
+
+    doLast {
+        project.version = versionFromGit(project)
+    }
+}
+project.tasks.getByName("classes").dependsOn(versionFromGigTask)
+
+publishing {
+    repositories {
+        maven {
+            name = "mavenPublish"
+            url = uri(providers.provider {
+                if (version.toString().endsWith("-SNAPSHOT"))
+                    (findProperty("repo.publish.snapshots")
+                        ?: findProperty("repo.publish.releases"))!! as String
+                else
+                    findProperty("repo.publish.releases")!! as String
+            })
+            credentials {
+                username = findProperty("repo.publish.username")!! as String
+                password = findProperty("repo.publish.password")!! as String
+            }
+        }
+    }
 }
 
 kotlin {
     jvmToolchain(17)
-}
-
-publishing {
-    repositories {
-        clear()
-        maven {
-            name = "agl-nexus"
-
-            url = (
-                    if (project.version.toString().contains("SNAPSHOT"))
-                        (System.getProperty("repo.agl.snapshots")
-                            ?: System.getenv("MAVEN_PUBLISH_SNAPSHOTS"))
-                    else
-                        (System.getProperty("repo.agl.snapshots")
-                            ?: System.getenv("MAVEN_PUBLISH_RELEASES"))
-                    ).let { project.uri(it) }
-
-            credentials {
-                username = System.getProperty("repo.agl.username") ?: System.getenv("MAVEN_PUBLISH_USERNAME")
-                password = System.getProperty("repo.agl.password") ?: System.getenv("MAVEN_PUBLISH_PASSWORD")
-            }
-        }
-    }
 }
