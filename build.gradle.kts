@@ -33,7 +33,7 @@ sourceSets {
     }
 }
 
-val versionFromGitTask = tasks.register("versionFromGit", DefaultTask::class.java) {
+val versionTask = tasks.register("version", DefaultTask::class.java) {
     group = "build"
     description = "Get project version from GIT tags"
 
@@ -42,10 +42,11 @@ val versionFromGitTask = tasks.register("versionFromGit", DefaultTask::class.jav
         println("Version calculated: ${AnsiColors.GREEN_BRIGHT}${project.version}${AnsiColors.RESET}")
     }
 }
-project.tasks.getByName("classes").dependsOn(versionFromGitTask)
+
+project.tasks.getByName("classes").dependsOn(versionTask)
 project.tasks.filter { it.group == "publishing" }.forEach {
-    it.dependsOn(versionFromGitTask)
-    it.mustRunAfter(versionFromGitTask)
+    it.dependsOn(versionTask)
+    it.mustRunAfter(versionTask)
 }
 
 publishing {
