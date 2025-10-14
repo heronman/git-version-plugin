@@ -33,20 +33,25 @@ sourceSets {
     }
 }
 
-val versionFromGigTask = tasks.register("versionFromGit", DefaultTask::class.java) {
+val versionFromGitTask = tasks.register("versionFromGit", DefaultTask::class.java) {
     group = "build"
     description = "Get project version from GIT tags"
 
     doLast {
         project.version = versionFromGit(project)
+        println("Version calculated: ${AnsiColors.GREEN_BRIGHT}${project.version}${AnsiColors.RESET}")
     }
 }
-project.tasks.getByName("classes").dependsOn(versionFromGigTask)
+project.tasks.getByName("classes").dependsOn(versionFromGitTask)
+project.tasks.filter { it.group == "publishing" }.forEach {
+    it.dependsOn(versionFromGitTask)
+    it.mustRunAfter(versionFromGitTask)
+}
 
 publishing {
     repositories {
         maven {
-            name = "mavenPublish"
+            name = "mavenRepo"
             url = uri(providers.provider {
                 if (version.toString().endsWith("-SNAPSHOT"))
                     (findProperty("repo.publish.snapshots")

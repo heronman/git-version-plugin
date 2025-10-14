@@ -1,5 +1,6 @@
 package net.agl.gradle
 
+import AnsiColors
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -13,6 +14,7 @@ class GitVersionPlugin : Plugin<Project> {
 
             doLast {
                 project.version = versionFromGit(project)
+                println("Version calculated: ${AnsiColors.GREEN}${project.version}${AnsiColors.RESET}")
             }
         }
 
