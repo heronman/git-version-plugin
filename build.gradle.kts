@@ -1,3 +1,6 @@
+import net.agl.gradle.versionFromGit
+import kotlin.text.split
+
 plugins {
     `kotlin-dsl`
     `java-gradle-plugin`
@@ -6,14 +9,14 @@ plugins {
 
 group = "net.agl.gradle"
 version = versionFromGit(project)
+val publishVersion = project.version.toString().split("-", limit = 2).let {
+    if (it.size == 2) "${it[0]}-SNAPSHOT" else it[0]
+}
 
-gradlePlugin {
-    plugins {
-        create("gitVersionPlugin") {
-            id = "${project.group}.${project.name}"
-            implementationClass = "net.agl.gradle.GitVersionPlugin"
-        }
-    }
+gradlePlugin.plugins.create("gitVersionPlugin") {
+    id = "${project.group}.${project.name}"
+    version = publishVersion
+    implementationClass = "net.agl.gradle.GitVersionPlugin"
 }
 
 repositories {
@@ -38,7 +41,7 @@ publishing {
         maven {
             name = "nexus"
             url = uri(
-                if (project.version.toString().endsWith("-SNAPSHOT"))
+                if (publishVersion.endsWith("-SNAPSHOT"))
                     (findProperty("repo.publish.snapshots")
                         ?: findProperty("repo.publish.releases"))!! as String
                 else findProperty("repo.publish.releases")!! as String
@@ -52,5 +55,5 @@ publishing {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
