@@ -1,5 +1,3 @@
-package net.agl.gradle
-
 import kotlin.math.min
 
 class Version(val parts: Array<Int>, val suffix: String? = null, prefix: Char? = null) : Comparable<Version> {

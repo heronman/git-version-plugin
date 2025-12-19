@@ -1,4 +1,3 @@
-import net.agl.gradle.versionFromGit
 import kotlin.text.split
 
 plugins {

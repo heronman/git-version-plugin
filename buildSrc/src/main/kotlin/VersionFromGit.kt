@@ -1,5 +1,3 @@
-package net.agl.gradle
-
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.diff.DiffFormatter
 import org.eclipse.jgit.diff.RawTextComparator
