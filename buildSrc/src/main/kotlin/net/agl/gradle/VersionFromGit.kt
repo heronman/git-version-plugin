@@ -105,15 +105,15 @@ private fun getLastTag(repo: Repository): Pair<RevTag?, Int?> {
 }
 
 fun versionFromGit(
-    project: Project,
-    gitRoot: String? = null,
+    project: Project? = null,
+    gitRoot: String? = ".",
     dirtyDetect: Boolean = true,
     dirtyHash: Boolean = true,
     commitsNo: Boolean = true,
     fallbackVersion: String = DEFAULT_FALLBACK_VERSION
 ): String {
     try {
-        val repositoryPath = gitRoot ?: project.rootDir.absolutePath
+        val repositoryPath = project?.rootDir?.absolutePath ?: gitRoot
         Git.open(File(repositoryPath)).use { git ->
             val repo = git.repository
 
